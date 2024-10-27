@@ -9,7 +9,6 @@ import locale
 locale.setlocale(locale.LC_ALL, 'en_US')
 import pandas as pd
 
-import Rhino.Geometry as rg
 import pyarrow.parquet as pq
 
 def getPointsFromDF(df):

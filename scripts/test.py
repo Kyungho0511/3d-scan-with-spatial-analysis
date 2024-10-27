@@ -118,9 +118,36 @@ def dfToPC(df):
 def dfToBB(df):
     return create_bounding_box(dfToPC(df))
 
-def wallsMesh(pline):
+def wallsMesh(pline, height):
     pts = pline
-    print(pts[0])
+    meshList = []
+    holder = []
+    for i, pt in enumerate(pline):
+        mesh = rhino3dm.Mesh()
+        ptA = pt
+        if i == len(pline) - 1:
+            ptB1 = pline[0]
+        else:
+            ptB1 = pline[i+1]
+        ptB = rhino3dm.Point3d(pt.X, pt.Y, height[1])
+        ptA1 = rhino3dm.Point3d(ptB1.X, ptB1.Y, height[1])
+        
+        mesh.Vertices.Add(ptA.X, ptA.Y, ptA.Z)
+        mesh.Vertices.Add(ptB.X, ptB.Y, ptB.Z)
+        mesh.Vertices.Add(ptA1.X, ptA1.Y, ptA1.Z)
+        mesh.Vertices.Add(ptB1.X, ptB1.Y, ptB1.Z)
+        
+        mesh.Faces.AddFace(0,1,2,3)
+        # Optionally: Compute the normals
+        mesh.Normals.ComputeNormals()
+        meshList.append(mesh)
+    meshHolder = rhino3dm.Mesh()
+    for mesh in meshList:
+        meshHolder.Append(mesh)
+    return meshHolder
+
+
+
 
 def windowMesh(line, zBounds):
     mesh = rhino3dm.Mesh()
@@ -141,41 +168,6 @@ def windowMesh(line, zBounds):
 
     return mesh
 
-
-
-# def dfToMesh(df):
-    
-#     point_cloud = dfToPC(df)
-
-#     # Downsample the point cloud
-#     pcd = point_cloud.voxel_down_sample(voxel_size=0.01)
-
-#     # Remove outliers
-#     cl, ind = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
-#     clean_pcd = pcd.select_by_index(ind)
-
-#     # Visualize the cleaned point cloud
-#     # o3d.visualization.draw_geometries([clean_pcd])
-    
-
-#     # Estimate normals
-#     clean_pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-
-#     # Orient the normals
-#     # clean_pcd.orient_normals_consistent_tangent_plane(100)
-#     mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-#         clean_pcd, depth=9
-#     )
-#     mesh.vertex_colors = clean_pcd.colors
-
-#     # # Define a threshold to remove low-density vertices
-#     # vertices = np.asarray(mesh.vertices)
-#     # density_threshold = np.percentile(densities, 5)  # Remove the bottom 5% of densities
-#     # vertices_to_remove = densities < density_threshold
-
-#     # # Filter vertices based on the density threshold
-#     # mesh.remove_vertices_by_mask(vertices_to_remove)
-#     return mesh
 
 def dfToMesh(df):
     
@@ -223,13 +215,13 @@ def getPlanarMesh(pLine):
     rhino3dm.NurbsSurface.Create()
 
 
-def getPolyline(ptList):
+def getPolyline(ptList, bottomBound):
     pts = []
     if(len(ptList) > 3):
         ptList = np.append(ptList, [ptList[0]], axis=0)
         
     for pt in ptList:
-        pts.append(rhino3dm.Point3d(pt[0],pt[1],0.0))
+        pts.append(rhino3dm.Point3d(pt[0],pt[1],bottomBound))
     return rhino3dm.Polyline(pts)
 
 def dfToRhinoMesh(df):
@@ -265,11 +257,13 @@ def run(name):
 
     model = rhino3dm.File3dm()
     final_fp,room_height,final_endpoint_lst,z_bound = outline.main(a)
-    pLine = getPolyline(final_fp)
+    pLine = getPolyline(final_fp, room_height[0])
     for i, points in enumerate(final_endpoint_lst):
         model.Objects.AddMesh(windowMesh(points, z_bound[i]))
-        model.Objects.AddPolyline(getPolyline(points))
+        model.Objects.AddPolyline(getPolyline(points, z_bound[i][0]))
     
+    
+    model.Objects.AddMesh(wallsMesh(pLine, room_height))
     # Convert to a pandas DataFrame if needed
     df = table.to_pandas()
     dfWalls = df[df['cat'] == 2]
