@@ -22,7 +22,7 @@ export default function Home() {
         });
 
         const session = await createSession({
-          ticket: "8c1fbc7d2f7baf922985438965b3d7614021960a11c13a1c01984fbd2926b8c9c85aeceb26a81bf46e2e599fdf63ec7af4b6851462a0d1b1bae64ff3c35378751189214f6f199118e6dd6ea5e08e2994b03fce8b5e0af9e0d9cb9e56a52ec106bbb3f6d90b005c-08ec0aa6d365cbe33243a055e9a6528d",
+          ticket: "1b282b249db3a6ca11a697aa7eb7d6df0e8d328bb14413093593aeab207706fc79558670ceb5ffc76765e3de6f846c41e195a6c5ad13f24d99de14115fa8ce2c68e83d547d415e54c81a8199d7296a5722749cc97808caa12e39238594d6d600eb11e1467585b3-0374140ac433d3f7a8838683025879ed",
           modelViewUrl: "https://sdr7euc1.eu-central-1.shapediver.com",
           id: "mySession",
         });
