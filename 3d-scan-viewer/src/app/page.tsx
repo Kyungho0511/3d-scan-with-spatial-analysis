@@ -128,7 +128,7 @@ export default function Home() {
         <h2 className="text-xl font-semibold mb-4">Analysis Inputs</h2>
         <div className="space-y-4">
           <InputSection label="Space Index" options={["A", "B", "C"]} selected={spaceIndex} setSelected={setSpaceIndex} />
-          <InputSection label="Visualization Type" options={["Sun Hour", "Indoor Comfort", "Daylight Availability", "View Analysis"]} selected={visualizationType} setSelected={setVisualizationType} />
+          <InputSection label="Visualization Type" options={["Sun Hour", "View Analysis","Indoor Comfort", "Daylight Availability"]} selected={visualizationType} setSelected={setVisualizationType} />
           <InputSection
             label="Analysis Period"
             options={["Morning(6-10)", "Noon(10-14)", "Afternoon(14-18)", "No Specific Time"]}
