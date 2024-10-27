@@ -17,5 +17,22 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Open Sans', sans-serif;
+}
+
+@keyframes fadeToGrey {
+  from {
+    background-color: #c0c0c0;
+    opacity: 1;
+  }
+  to {
+    background-color: #e0e0e0;
+    opacity: 0.6;
+  }
+}
+
+.grey-out {
+  animation: fadeToGrey 0.5s ease forwards;
+  color: #666666;
+  cursor: not-allowed;
 }

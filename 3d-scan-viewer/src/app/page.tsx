@@ -3,23 +3,39 @@
 import { useEffect, useRef, useState } from "react";
 import { createSession, createViewport } from "@shapediver/viewer";
 
+interface Feature {
+  name: string;
+  value: string | number;
+}
+
+interface InputSectionProps {
+  label: string;
+  options: string[];
+  selected: string;
+  setSelected: React.Dispatch<React.SetStateAction<string>>;
+  disabledOptions?: string[]; // Optionally disable specific options
+}
+
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sessionRef = useRef<any>(null);
-  const [isSessionInitialized, setIsSessionInitialized] = useState(false);
+  const [isSessionInitialized, setIsSessionInitialized] = useState<boolean>(false);
 
   // States for ShapeDiver parameters
-  const [spaceIndex, setSpaceIndex] = useState("0");
-  const [visualizationType, setVisualizationType] = useState("0");
-  const [analysisPeriod, setAnalysisPeriod] = useState("0");
+  const [spaceIndex, setSpaceIndex] = useState<string>("0");
+  const [visualizationType, setVisualizationType] = useState<string>("0");
+  const [analysisPeriod, setAnalysisPeriod] = useState<string>("0");
+
+  // State to hold features after "color" and their values
+  const [featuresAfterColor, setFeaturesAfterColor] = useState<Feature[]>([]);
 
   useEffect(() => {
-    const initializeViewer = async () => {
-      if (!canvasRef.current) return;
+    if (typeof window === "undefined" || !canvasRef.current) return; // Client-side check for window object
 
+    const initializeViewer = async () => {
       try {
         const viewport = await createViewport({
-          canvas: canvasRef.current,
+          canvas: canvasRef.current as HTMLCanvasElement,
           id: "myViewport",
         });
 
@@ -45,7 +61,7 @@ export default function Home() {
     const session = sessionRef.current;
     const visualizationParam = session.getParameterByName("Visualization Type")[0];
     const analysisPeriodParam = session.getParameterByName("Analysis Period")[0];
-    const spaceIndexParam = session.getParameterByName("Space Index")[0]; // New parameter for Space Index
+    const spaceIndexParam = session.getParameterByName("Space Index")[0];
 
     // Set values for ShapeDiver parameters
     if (visualizationParam) visualizationParam.value = visualizationType;
@@ -61,10 +77,45 @@ export default function Home() {
     }
   }, [spaceIndex, visualizationType, analysisPeriod, isSessionInitialized]);
 
+  const generateFilePath = (): string => {
+    return `https://raw.githubusercontent.com/Kyungho0511/3d-scan-with-spatial-analysis/refs/heads/simulation-to-viewer/ViewerData/S${spaceIndex}_V${visualizationType}_H${analysisPeriod}.txt`;
+  };
+
+  const fetchAndSetFeaturesAfterColor = async () => {
+    const filePath = generateFilePath();
+    try {
+      const response = await fetch(filePath);
+      const data = await response.json();
+
+      const features = Object.keys(data);
+      const colorIndex = features.indexOf("color");
+
+      if (colorIndex !== -1) {
+        const featuresAfterColor: Feature[] = features.slice(colorIndex + 1).map((feature) => ({
+          name: feature,
+          value: !isNaN(Number(data[feature])) ? Number(data[feature]).toFixed(2) : data[feature],
+        }));
+        setFeaturesAfterColor(featuresAfterColor);
+      } else {
+        console.log("'color' key not found in the data.");
+      }
+    } catch (error) {
+      console.error("Error fetching or parsing file:", error);
+    }
+  };
+
+  // Fetch features when parameters change
+  useEffect(() => {
+    fetchAndSetFeaturesAfterColor();
+  }, [spaceIndex, visualizationType, analysisPeriod]);
+
+  // Disable all options except "No Specific Time" if "View Analysis" is selected
+  const disabledAnalysisPeriods = visualizationType === "3" ? ["0", "1", "2"] : [];
+
   return (
     <div className="flex min-h-screen p-8 gap-8 bg-gray-50">
       <div className="flex-1 bg-white rounded-lg shadow-md p-4 relative overflow-hidden">
-        <h2 className="text-xl font-semibold mb-4"></h2>
+        <h2 className="text-xl font-semibold mb-4">3D Visualization</h2>
         <canvas
           ref={canvasRef}
           id="viewport1"
@@ -74,100 +125,60 @@ export default function Home() {
       </div>
 
       <div className="w-1/4 bg-white rounded-lg shadow-md p-4">
-        <h2 className="text-xl font-semibold mb-4">Inputs</h2>
+        <h2 className="text-xl font-semibold mb-4">Analysis Inputs</h2>
         <div className="space-y-4">
-          <div>
-            <label htmlFor="spaceIndex" className="block font-medium text-gray-700">
-              Space Index
-            </label>
-            <select
-              id="spaceIndex"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={spaceIndex}
-              onChange={(e) => setSpaceIndex(e.target.value)}
-            >
-              <option value="0">A</option>
-              <option value="1">B</option>
-              <option value="2">C</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="visualizationType" className="block font-medium text-gray-700">
-              Visualization Type
-            </label>
-            <select
-              id="visualizationType"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={visualizationType}
-              onChange={(e) => setVisualizationType(e.target.value)}
-            >
-              <option value="0">Sun Hour</option>
-              <option value="1">Indoor Comfort</option>
-              <option value="2">Daylight Availability</option>
-              <option value="3">View Analysis</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="analysisPeriod" className="block font-medium text-gray-700">
-              Analysis Period
-            </label>
-            <select
-              id="analysisPeriod"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={analysisPeriod}
-              onChange={(e) => setAnalysisPeriod(e.target.value)}
-            >
-              <option value="0">Morning(6-10)</option>
-              <option value="1">Noon(10-14)</option>
-              <option value="2">Afternoon(14-18)</option>
-            </select>
+          <InputSection label="Space Index" options={["A", "B", "C"]} selected={spaceIndex} setSelected={setSpaceIndex} />
+          <InputSection label="Visualization Type" options={["Sun Hour", "Indoor Comfort", "Daylight Availability", "View Analysis"]} selected={visualizationType} setSelected={setVisualizationType} />
+          <InputSection
+            label="Analysis Period"
+            options={["Morning(6-10)", "Noon(10-14)", "Afternoon(14-18)", "No Specific Time"]}
+            selected={visualizationType === "3" ? "3" : analysisPeriod} // Force "No Specific Time" selection when "View Analysis" is chosen
+            setSelected={setAnalysisPeriod}
+            disabledOptions={disabledAnalysisPeriods} // Disable options for "View Analysis"
+          />
+        </div>
+
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Analysis Results</h3>
+          <div className="space-y-4">
+            {featuresAfterColor.map((feature, index) => (
+              <div key={index} className="p-2 border rounded bg-gray-100">
+                <div className="font-semibold text-gray-700">{feature.name}</div>
+                <div className="text-gray-900">
+                  {typeof feature.value === "string" ? feature.value : Number(feature.value).toFixed(2)}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <ChatGPTBox />
       </div>
     </div>
   );
 }
 
-// ChatGPT chat box component
-function ChatGPTBox() {
-  const [messages, setMessages] = useState([{ role: "assistant", content: "Hello! How can I help you?" }]);
-  const [input, setInput] = useState("");
-
-  const handleSendMessage = async () => {
-    if (!input.trim()) return;
-
-    setMessages((prevMessages) => [...prevMessages, { role: "user", content: input }]);
-    setInput("");
-
-    const response = { role: "assistant", content: "I'm here to help with your questions!" };
-    setMessages((prevMessages) => [...prevMessages, response]);
-  };
-
+// Input section component with optional disabled options
+function InputSection({ label, options, selected, setSelected, disabledOptions = [] }: InputSectionProps) {
   return (
-    <div className="mt-8 p-4 bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-lg font-semibold mb-4">AI Assistant</h2>
-      <div className="overflow-y-auto h-48 mb-4 border rounded p-2 bg-white">
-        {messages.map((msg, index) => (
-          <div key={index} className={`mb-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-            <span className={`inline-block p-2 rounded-lg ${msg.role === "user" ? "bg-blue-200" : "bg-gray-200"}`}>
-              {msg.content}
-            </span>
-          </div>
-        ))}
+    <div>
+      <label className="block font-medium text-gray-700">{label}</label>
+      <div className="mt-1 flex flex-wrap gap-2">
+        {options.map((option, index) => {
+          const isDisabled = disabledOptions.includes(index.toString());
+          return (
+            <button
+              key={index}
+              className={`px-3 py-1 rounded ${
+                selected === index.toString() ? "bg-blue-500 text-white" : isDisabled ? "grey-out" : "bg-gray-200"
+              }`}
+              style={{ minWidth: "75px" }}
+              onClick={() => setSelected(index.toString())}
+              disabled={isDisabled}
+            >
+              {option}
+            </button>
+          );
+        })}
       </div>
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type your message..."
-        className="w-full border rounded p-2 mb-2"
-      />
-      <button
-        onClick={handleSendMessage}
-        className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-      >
-        Send
-      </button>
     </div>
   );
 }
