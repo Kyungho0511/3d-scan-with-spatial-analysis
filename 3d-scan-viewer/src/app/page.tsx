@@ -1,4 +1,4 @@
-"use client"; // Add this line at the top
+"use client"; // Ensures client-side rendering
 
 import { useEffect, useRef, useState } from "react";
 import { createSession, createViewport } from "@shapediver/viewer";
@@ -8,12 +8,14 @@ export default function Home() {
   const sessionRef = useRef<any>(null);
   const [isSessionInitialized, setIsSessionInitialized] = useState(false);
 
-  const [visualizationType, setVisualizationType] = useState("0");
-  const [analysisPeriod, setAnalysisPeriod] = useState("0");
+  // States for ShapeDiver parameters
+  const [spaceIndexType, setSpaceIndexType] = useState("A");
+  const [visualizationType, setVisualizationType] = useState("sunHours");
+  const [analysisPeriod, setAnalysisPeriod] = useState("6_10");
 
   useEffect(() => {
     const initializeViewer = async () => {
-      if (typeof window === 'undefined' || !canvasRef.current) return;
+      if (!canvasRef.current) return;
 
       try {
         const viewport = await createViewport({
@@ -22,7 +24,7 @@ export default function Home() {
         });
 
         const session = await createSession({
-          ticket: "1b282b249db3a6ca11a697aa7eb7d6df0e8d328bb14413093593aeab207706fc79558670ceb5ffc76765e3de6f846c41e195a6c5ad13f24d99de14115fa8ce2c68e83d547d415e54c81a8199d7296a5722749cc97808caa12e39238594d6d600eb11e1467585b3-0374140ac433d3f7a8838683025879ed",
+          ticket: "bb95520c067922bd4c054a713bd0674aa6933ccfc853fdeb1d24de3357b2bedc6b5da3d6f8ebce4a18f50a71037316aab77d8e1ee153409cb7636c29449c185fd939d96e1dcacd6a72ac6f1730087d126c708f39c620ca61e517b6a62cca048092f341d31225d1-0d8bef910ac6880b6c57049595cf8db6",
           modelViewUrl: "https://sdr7euc1.eu-central-1.shapediver.com",
           id: "mySession",
         });
@@ -44,8 +46,12 @@ export default function Home() {
     const visualizationParam = session.getParameterByName("Visualization Type")[0];
     const analysisPeriodParam = session.getParameterByName("Analysis Period")[0];
 
-    if (visualizationParam) visualizationParam.value = visualizationType;
-    if (analysisPeriodParam) analysisPeriodParam.value = analysisPeriod;
+    // Debugging logs to verify values
+    console.log("Setting Visualization Type to:", visualizationType);
+    console.log("Setting Analysis Period to:", analysisPeriod);
+
+    if (visualizationParam) visualizationParam.value = visualizationType; // Pass string directly
+    if (analysisPeriodParam) analysisPeriodParam.value = analysisPeriod;   // Pass string directly
 
     await session.customize();
   };
@@ -70,43 +76,55 @@ export default function Home() {
 
       <div className="w-1/4 bg-white rounded-lg shadow-md p-4">
         <h2 className="text-xl font-semibold mb-4">Options</h2>
-        
-        {/* Visualization Type Button Group */}
-        <div>
-          <label className="block font-medium text-gray-700">Visualization Type</label>
-          <div className="flex space-x-2 mt-2">
-            {["Sun Hour", "Indoor Comfort", "Daylight Availability", "View Analysis"].map((type, index) => (
-              <button
-                key={index}
-                onClick={() => setVisualizationType(index.toString())}
-                className={`flex-1 px-4 py-2 rounded ${
-                  visualizationType === index.toString() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-                }`}
-              >
-                {type}
-              </button>
-            ))}
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="spaceIndex" className="block font-medium text-gray-700">
+              Space Index
+            </label>
+            <select
+              id="spaceIndex"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={spaceIndexType}
+              onChange={(e) => setSpaceIndexType(e.target.value)}
+            >
+              <option value="0">A</option>
+              <option value="1">B</option>
+              <option value="2">C</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="visualizationType" className="block font-medium text-gray-700">
+              Visualization Type
+            </label>
+            <select
+              id="visualizationType"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={visualizationType}
+              onChange={(e) => setVisualizationType(e.target.value)}
+            >
+              <option value="0">Sun Hours</option>
+              <option value="1">Indoor Comfort</option>
+              <option value="2">Daylight Availability</option>
+              <option value="3">View Analysis</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="analysisPeriod" className="block font-medium text-gray-700">
+              Analysis Period
+            </label>
+            <select
+              id="analysisPeriod"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              value={analysisPeriod}
+              onChange={(e) => setAnalysisPeriod(e.target.value)}
+            >
+              <option value="0">Morning (6-10)</option>
+              <option value="1">Noon (10-14)</option>
+              <option value="2">Afternoon (14-18)</option>
+              <option value="3">No Specific Time</option>
+            </select>
           </div>
         </div>
-
-        {/* Analysis Period Button Group */}
-        <div className="mt-4">
-          <label className="block font-medium text-gray-700">Analysis Period</label>
-          <div className="flex space-x-2 mt-2">
-            {["Morning (6-10)", "Noon (10-14)", "Afternoon (14-18)"].map((period, index) => (
-              <button
-                key={index}
-                onClick={() => setAnalysisPeriod(index.toString())}
-                className={`flex-1 px-4 py-2 rounded ${
-                  analysisPeriod === index.toString() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-                }`}
-              >
-                {period}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <ChatGPTBox />
       </div>
     </div>
