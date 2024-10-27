@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.1.5",
     "@shapediver/viewer": "^3.4.3",
     "@shapediver/viewer.shared.demo-helper": "^3.4.3",
     "next": "15.0.1",

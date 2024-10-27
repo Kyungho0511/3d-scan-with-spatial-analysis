@@ -70,39 +70,43 @@ export default function Home() {
 
       <div className="w-1/4 bg-white rounded-lg shadow-md p-4">
         <h2 className="text-xl font-semibold mb-4">Options</h2>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="visualizationType" className="block font-medium text-gray-700">
-              Visualization Type
-            </label>
-            <select
-              id="visualizationType"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={visualizationType}
-              onChange={(e) => setVisualizationType(e.target.value)}
-            >
-              <option value="0">Sun Hour</option>
-              <option value="1">Indoor Comfort</option>
-              <option value="2">Daylight Availability</option>
-              <option value="3">View Analysis</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="analysisPeriod" className="block font-medium text-gray-700">
-              Analysis Period
-            </label>
-            <select
-              id="analysisPeriod"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={analysisPeriod}
-              onChange={(e) => setAnalysisPeriod(e.target.value)}
-            >
-              <option value="0">Morning(6-10)</option>
-              <option value="1">Noon(10-14)</option>
-              <option value="2">Afternoon(14-18)</option>
-            </select>
+        
+        {/* Visualization Type Button Group */}
+        <div>
+          <label className="block font-medium text-gray-700">Visualization Type</label>
+          <div className="flex space-x-2 mt-2">
+            {["Sun Hour", "Indoor Comfort", "Daylight Availability", "View Analysis"].map((type, index) => (
+              <button
+                key={index}
+                onClick={() => setVisualizationType(index.toString())}
+                className={`flex-1 px-4 py-2 rounded ${
+                  visualizationType === index.toString() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
           </div>
         </div>
+
+        {/* Analysis Period Button Group */}
+        <div className="mt-4">
+          <label className="block font-medium text-gray-700">Analysis Period</label>
+          <div className="flex space-x-2 mt-2">
+            {["Morning (6-10)", "Noon (10-14)", "Afternoon (14-18)"].map((period, index) => (
+              <button
+                key={index}
+                onClick={() => setAnalysisPeriod(index.toString())}
+                className={`flex-1 px-4 py-2 rounded ${
+                  analysisPeriod === index.toString() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <ChatGPTBox />
       </div>
     </div>
@@ -117,14 +121,10 @@ function ChatGPTBox() {
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
-    // Append user message to chat
     setMessages((prevMessages) => [...prevMessages, { role: "user", content: input }]);
     setInput("");
 
-    // Placeholder for GPT response (replace this with actual API call to OpenAI)
     const response = { role: "assistant", content: "I'm here to help with your questions!" };
-    
-    // Add GPT response to chat
     setMessages((prevMessages) => [...prevMessages, response]);
   };
 
