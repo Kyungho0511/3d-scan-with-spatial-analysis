@@ -3,6 +3,9 @@
 
 This repository provides tools for preprocessing point clouds for analysis in Grasshopper using Ladybug and for web visualization with React and Three.js. The preprocessing pipeline cleans, transforms, and prepares spatial data, making it compatible with computational design workflows and interactive 3D visualization.
 
+![png](https://github.com/user-attachments/assets/3ccf5d4d-3799-46a2-a19d-80563a91013d)
+
+
 ## Table of Contents
 - [Overview](#overview)
 - [Features](#features)
