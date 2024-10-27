@@ -10,8 +10,9 @@ This repository provides tools for preprocessing point clouds for analysis in Gr
 - [Usage](#usage)
 - [Preprocessing Details](#preprocessing-details)
 - [Visualization Workflow](#visualization-workflow)
+- [Dataset License](#dataset-license)
 - [Contributing](#contributing)
-- [License](#license)
+
 
 ## Overview
 
@@ -97,10 +98,13 @@ The \`preprocess.py\` script includes functions for various preprocessing steps:
    - Use platforms like Vercel or Netlify for deployment.
    - Adjust paths in the React app if needed.
 
+## Dataset License
+The InLUT dataset is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/legalcode).
+
+
 ## Contributing
 
 We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
 
-## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
