@@ -9,9 +9,9 @@ export default function Home() {
   const [isSessionInitialized, setIsSessionInitialized] = useState(false);
 
   // States for ShapeDiver parameters
-  const [spaceIndexType, setSpaceIndexType] = useState("A");
-  const [visualizationType, setVisualizationType] = useState("sunHours");
-  const [analysisPeriod, setAnalysisPeriod] = useState("6_10");
+  const [spaceIndex, setSpaceIndex] = useState("0");
+  const [visualizationType, setVisualizationType] = useState("0");
+  const [analysisPeriod, setAnalysisPeriod] = useState("0");
 
   useEffect(() => {
     const initializeViewer = async () => {
@@ -45,13 +45,12 @@ export default function Home() {
     const session = sessionRef.current;
     const visualizationParam = session.getParameterByName("Visualization Type")[0];
     const analysisPeriodParam = session.getParameterByName("Analysis Period")[0];
+    const spaceIndexParam = session.getParameterByName("Space Index")[0]; // New parameter for Space Index
 
-    // Debugging logs to verify values
-    console.log("Setting Visualization Type to:", visualizationType);
-    console.log("Setting Analysis Period to:", analysisPeriod);
-
-    if (visualizationParam) visualizationParam.value = visualizationType; // Pass string directly
-    if (analysisPeriodParam) analysisPeriodParam.value = analysisPeriod;   // Pass string directly
+    // Set values for ShapeDiver parameters
+    if (visualizationParam) visualizationParam.value = visualizationType;
+    if (analysisPeriodParam) analysisPeriodParam.value = analysisPeriod;
+    if (spaceIndexParam) spaceIndexParam.value = spaceIndex;
 
     await session.customize();
   };
@@ -60,12 +59,12 @@ export default function Home() {
     if (isSessionInitialized) {
       updateShapeDiverParameters();
     }
-  }, [visualizationType, analysisPeriod, isSessionInitialized]);
+  }, [spaceIndex, visualizationType, analysisPeriod, isSessionInitialized]);
 
   return (
     <div className="flex min-h-screen p-8 gap-8 bg-gray-50">
       <div className="flex-1 bg-white rounded-lg shadow-md p-4 relative overflow-hidden">
-        <h2 className="text-xl font-semibold mb-4">3D Viewer</h2>
+        <h2 className="text-xl font-semibold mb-4"></h2>
         <canvas
           ref={canvasRef}
           id="viewport1"
@@ -75,7 +74,7 @@ export default function Home() {
       </div>
 
       <div className="w-1/4 bg-white rounded-lg shadow-md p-4">
-        <h2 className="text-xl font-semibold mb-4">Options</h2>
+        <h2 className="text-xl font-semibold mb-4">Inputs</h2>
         <div className="space-y-4">
           <div>
             <label htmlFor="spaceIndex" className="block font-medium text-gray-700">
@@ -84,8 +83,8 @@ export default function Home() {
             <select
               id="spaceIndex"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              value={spaceIndexType}
-              onChange={(e) => setSpaceIndexType(e.target.value)}
+              value={spaceIndex}
+              onChange={(e) => setSpaceIndex(e.target.value)}
             >
               <option value="0">A</option>
               <option value="1">B</option>
@@ -102,7 +101,7 @@ export default function Home() {
               value={visualizationType}
               onChange={(e) => setVisualizationType(e.target.value)}
             >
-              <option value="0">Sun Hours</option>
+              <option value="0">Sun Hour</option>
               <option value="1">Indoor Comfort</option>
               <option value="2">Daylight Availability</option>
               <option value="3">View Analysis</option>
@@ -118,10 +117,9 @@ export default function Home() {
               value={analysisPeriod}
               onChange={(e) => setAnalysisPeriod(e.target.value)}
             >
-              <option value="0">Morning (6-10)</option>
-              <option value="1">Noon (10-14)</option>
-              <option value="2">Afternoon (14-18)</option>
-              <option value="3">No Specific Time</option>
+              <option value="0">Morning(6-10)</option>
+              <option value="1">Noon(10-14)</option>
+              <option value="2">Afternoon(14-18)</option>
             </select>
           </div>
         </div>
@@ -148,7 +146,7 @@ function ChatGPTBox() {
 
   return (
     <div className="mt-8 p-4 bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-lg font-semibold mb-4">ChatGPT Assistant</h2>
+      <h2 className="text-lg font-semibold mb-4">AI Assistant</h2>
       <div className="overflow-y-auto h-48 mb-4 border rounded p-2 bg-white">
         {messages.map((msg, index) => (
           <div key={index} className={`mb-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
