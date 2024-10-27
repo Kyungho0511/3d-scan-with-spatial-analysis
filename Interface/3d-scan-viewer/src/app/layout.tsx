@@ -17,7 +17,7 @@ const geistMono = localFont({
 
 // Metadata for SEO and site information
 export const metadata: Metadata = {
-  title: "3D Viewer App",
+  title: "3D Scan Viewer",
   description: "A Next.js application featuring a 3D viewer and interactive controls.",
 };
 
