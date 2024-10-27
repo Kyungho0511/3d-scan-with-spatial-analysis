@@ -35,6 +35,40 @@ def o3d_to_rhino3dm(o3d_mesh):
 
     return rhino_mesh
 
+def aabb_to_mesh(aabb):
+    """
+    Converts an Open3D AxisAlignedBoundingBox into a TriangleMesh.
+
+    Parameters:
+        aabb (o3d.geometry.AxisAlignedBoundingBox): The bounding box to convert.
+
+    Returns:
+        o3d.geometry.TriangleMesh: The mesh representation of the AABB.
+    """
+    # Get the eight corners of the AABB
+    corners = np.asarray(aabb.get_box_points())
+    
+    # Define the 12 triangles (faces) of the box using the corners
+    faces = [
+        [0, 1, 2], [0, 2, 3],  # bottom face
+        [4, 5, 6], [4, 6, 7],  # top face
+        [0, 1, 5], [0, 5, 4],  # front face
+        [2, 3, 7], [2, 7, 6],  # back face
+        [1, 2, 6], [1, 6, 5],  # right face
+        [0, 3, 7], [0, 7, 4]   # left face
+    ]
+    
+    # Create a TriangleMesh from the corners and faces
+    mesh = o3d.geometry.TriangleMesh()
+    mesh.vertices = o3d.utility.Vector3dVector(corners)
+    mesh.triangles = o3d.utility.Vector3iVector(faces)
+    
+    # Optionally, compute normals for better visualization
+    mesh.compute_vertex_normals()
+    
+    return mesh
+
+
 def create_bounding_box(point_cloud):
     """
     Create a simplified bounding box around the point cloud.
@@ -48,8 +82,9 @@ def create_bounding_box(point_cloud):
     # Get the axis-aligned bounding box (AABB)
     aabb = point_cloud.get_axis_aligned_bounding_box()
     
-    # Create a mesh from the bounding box
-    bounding_box_mesh = o3d.geometry.TriangleMesh.create_from_axis_aligned_bounding_box(aabb)
+    bounding_box_mesh = aabb_to_mesh(aabb)
+    # Create a mesh from the bounding bo
+    # bounding_box_mesh = o3d.geometry.TriangleMesh.create_from_axis_aligned_bounding_box(aabb)
     
     # Optionally, we can apply a scaling factor to make the box larger
     scale_factor = 1.05  # Scale to make the box slightly larger
@@ -68,12 +103,12 @@ def dfToPC(df):
 
 
 def dfToBB(df):
-    create_bounding_box(dfToPC(df))
+    return create_bounding_box(dfToPC(df))
 
 
 def dfToMesh(df):
     
-    point_cloud = defToPC(df)
+    point_cloud = dfToPC(df)
 
     # Downsample the point cloud
     pcd = point_cloud.voxel_down_sample(voxel_size=0.01)
@@ -107,9 +142,10 @@ def dfToMesh(df):
 
 
 def dfToRhinoMesh(df):
+    return o3d_to_rhino3dm(dfToBB(df))
+
+def dfToRhinoBBMesh(df):
     return o3d_to_rhino3dm(dfToMesh(df))
-
-
 # def add_numbers(a: str, b: float) -> rhino3dm.Mesh:
 a = dir_path = os.path.dirname(os.path.realpath(__file__)) + "/setup_22.parquet"
 
@@ -146,10 +182,21 @@ walls = dfToRhinoMesh(df_sampleWalls)
 floor = dfToRhinoMesh(df_sampleFloor)
 ceiling = dfToRhinoMesh(df_sampleCeiling)
 window = dfToRhinoMesh(df_sampleWindow)
-
-
 # Create a 3dm file
 model = rhino3dm.File3dm()
+model.Objects.AddMesh(walls)
+model.Objects.AddMesh(floor)
+model.Objects.AddMesh(ceiling)
+model.Objects.AddMesh(window)
+
+
+walls = dfToRhinoBBMesh(df_sampleWalls)
+floor = dfToRhinoBBMesh(df_sampleFloor)
+ceiling = dfToRhinoBBMesh(df_sampleCeiling)
+window = dfToRhinoBBMesh(df_sampleWindow)
+
+
+
 
 # Add the point to the model
 model.Objects.AddMesh(walls)
