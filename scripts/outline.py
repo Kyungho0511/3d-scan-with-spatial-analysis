@@ -8,6 +8,8 @@ import cv2
 def load_data(filename):
     # Load data from the specified filename (assuming it's a parquet file for this example)
     df = pd.read_parquet(filename)
+    num = int(len(df) * 0.5)
+    df.sample(n=num, random_state=1)
     return df
 
 def get_group(df,cat):
@@ -45,7 +47,7 @@ def closest_point_on_segment(p, a, b):
 def main(filename):
     # Load data from file
     df = load_data(filename)
-
+    
     ceiling = get_group(df,0)
     floor = get_group(df,1)
     windows = get_group(df,10)
