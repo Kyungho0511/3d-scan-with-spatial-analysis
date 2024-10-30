@@ -40,7 +40,7 @@ export default function Home() {
         });
 
         const session = await createSession({
-          ticket: "bb95520c067922bd4c054a713bd0674aa6933ccfc853fdeb1d24de3357b2bedc6b5da3d6f8ebce4a18f50a71037316aab77d8e1ee153409cb7636c29449c185fd939d96e1dcacd6a72ac6f1730087d126c708f39c620ca61e517b6a62cca048092f341d31225d1-0d8bef910ac6880b6c57049595cf8db6",
+          ticket: "b01272f0e2b880ffc3d2a22a002de6471fd4e1f21877f5e0491248db9eb526e354ffc2aed031a32509cd03dd122506fc1f8d7a2c84bda26fc208c018941af3a19bf567fd9449e2fad6349d76c3b3c5c27ad9c758314b9d9839285bedacacc91e8b13391f0bea73-978cc2d04bff5c3eee0419c927fb9df0",
           modelViewUrl: "https://sdr7euc1.eu-central-1.shapediver.com",
           id: "mySession",
         });
@@ -109,30 +109,39 @@ export default function Home() {
     fetchAndSetFeaturesAfterColor();
   }, [spaceIndex, visualizationType, analysisPeriod]);
 
-  // Disable all options except "No Specific Time" if "View Analysis" is selected
-  const disabledAnalysisPeriods = visualizationType === "3" ? ["0", "1", "2"] : [];
+  // Auto-select "No Specific Time" if "View Analysis" is chosen
+  useEffect(() => {
+    if (visualizationType === "1") { // View Analysis selected
+      setAnalysisPeriod("3"); // Set to "No Specific Time"
+    } else if (visualizationType === "0" && ["0", "1", "2"].includes(analysisPeriod)) { // Sun Hour selected
+      setAnalysisPeriod("0"); // Default to "Morning"
+    }
+  }, [visualizationType]);
+
+  // Disable options based on the selected visualization type
+  const disabledAnalysisPeriods = visualizationType === "1" ? ["0", "1", "2"] : [];
 
   return (
     <div className="flex min-h-screen p-8 gap-8 bg-gray-50">
       <div className="flex-1 bg-white rounded-lg shadow-md p-4 relative overflow-hidden">
-        <h2 className="text-xl font-semibold mb-4">3D Visualization</h2>
+        <h2 className="text-xl font-semibold mb-4"></h2>
         <canvas
           ref={canvasRef}
           id="viewport1"
           className="w-full h-full"
-          style={{ maxWidth: "1000px", maxHeight: "600px" }}
+          style={{ maxWidth: "1000px", maxHeight: "625px" }}
         />
       </div>
 
       <div className="w-1/4 bg-white rounded-lg shadow-md p-4">
         <h2 className="text-xl font-semibold mb-4">Analysis Inputs</h2>
         <div className="space-y-4">
-          <InputSection label="Space Index" options={["A", "B", "C"]} selected={spaceIndex} setSelected={setSpaceIndex} />
-          <InputSection label="Visualization Type" options={["Sun Hour", "View Analysis","Indoor Comfort", "Daylight Availability"]} selected={visualizationType} setSelected={setVisualizationType} />
+          <InputSection label="Space Index" options={["A(original)", "A(cleaned)", "B(original)", "B(cleaned)"]} selected={spaceIndex} setSelected={setSpaceIndex} />
+          <InputSection label="Visualization Type" options={["Sun Hour", "View Analysis"]} selected={visualizationType} setSelected={setVisualizationType} />
           <InputSection
             label="Analysis Period"
             options={["Morning(6-10)", "Noon(10-14)", "Afternoon(14-18)", "No Specific Time"]}
-            selected={visualizationType === "3" ? "3" : analysisPeriod} // Force "No Specific Time" selection when "View Analysis" is chosen
+            selected={analysisPeriod}
             setSelected={setAnalysisPeriod}
             disabledOptions={disabledAnalysisPeriods} // Disable options for "View Analysis"
           />
@@ -167,9 +176,7 @@ function InputSection({ label, options, selected, setSelected, disabledOptions =
           return (
             <button
               key={index}
-              className={`px-3 py-1 rounded ${
-                selected === index.toString() ? "bg-blue-500 text-white" : isDisabled ? "grey-out" : "bg-gray-200"
-              }`}
+              className={`px-3 py-1 rounded ${selected === index.toString() ? "bg-blue-500 text-white" : isDisabled ? "grey-out" : "bg-gray-200"}`}
               style={{ minWidth: "75px" }}
               onClick={() => setSelected(index.toString())}
               disabled={isDisabled}
